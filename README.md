@@ -13,10 +13,14 @@ Dashboard of a NYC heat map showing which areas have more complaints than others
 
 ## To Run
 
-1. Start reactjs webserver `yarn start`
-2. Start flask api `yarn start-api`
+1. Install packages `npm install`
+2. Start reactjs webserver `yarn start`
+3. Create python venv inside api dir `api $ python3 -m venv venv`
+4. Activate venv `source venv/bin/activate`
+5. Install python packages `(venv) $ pip install flask python-dotenv`
+6. Start flask api `yarn start-api`
 
-TODO:
+## TODOs
 - [ ] create queries to get borough boundaries
 - [ ] create queries to get complaint data for each borough boundary
 - [ ] create queries to get complaint data for individual locations
