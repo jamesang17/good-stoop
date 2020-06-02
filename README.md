@@ -17,7 +17,7 @@ Dashboard of a NYC heat map showing which areas have more complaints than others
 2. Start reactjs webserver `yarn start`
 3. Create python venv inside api dir `api $ python3 -m venv venv`
 4. Activate venv `source venv/bin/activate`
-5. Install python packages `(venv) $ pip install flask python-dotenv`
+5. Install python packages listed in api/requirements.txt `(venv) $ pip install flask ...`
 6. Start flask api `yarn start-api`
 
 ## TODOs
@@ -27,3 +27,5 @@ Dashboard of a NYC heat map showing which areas have more complaints than others
 - [ ] create queries to get restaurant data for each borough boundary
 - [ ] create queries to get restaurant data for individual locations
 - [ ] create dashboard with react
+
+Created with: https://blog.miguelgrinberg.com/post/how-to-create-a-react--flask-project
