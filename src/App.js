@@ -1,44 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import axios from 'axios';
+import { DataContext } from './components/providers/DataProvider';
+
 
 function App() {
-  const [state, setState] = useState({
-    currentTime: 0,
-    boroughBoundaries: null
-  })
-
-  const getBoundaries = async () => {
-    await axios.get('/api/borough_boundaries')
-      .then(res => {
-        console.log(res.data);
-      });
-  }
-
-  const getBuildingComplaints = async () => {
-    await axios.get('/api/building_complaint_results')
-      .then(res => console.log(res))
-  }
-
-  const getNypdComplaints = async () => {
-    await axios.get('/api/nypd_complaint_results')
-      .then(res => console.log(res))
-  }
-
-  const getRestaurantInspectionResults = async () => {
-    await axios.get('/api/restaurant_inspection_results')
-      .then(res => {
-        console.log(res.data);
-      });
-  }
-
-  useEffect(() => {
-    getBoundaries();
-    getBuildingComplaints();
-    getNypdComplaints();
-    getRestaurantInspectionResults();
-  }, []);
+  const { state } = useContext(DataContext);
 
   return (
     <div className="App">
@@ -56,7 +23,6 @@ function App() {
           Learn React
         </a>
         <p>The current time is {state.currentTime}.</p>
-        <p>NYC borough boundaries are {String(state.boroughBoundaries)}</p>
       </header>
     </div>
   );
