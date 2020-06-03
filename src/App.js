@@ -16,6 +16,16 @@ function App() {
       });
   }
 
+  const getBuildingComplaints = async () => {
+    await axios.get('/api/building_complaint_results')
+      .then(res => console.log(res))
+  }
+
+  const getNypdComplaints = async () => {
+    await axios.get('/api/nypd_complaint_results')
+      .then(res => console.log(res))
+  }
+
   const getRestaurantInspectionResults = async () => {
     await axios.get('/api/restaurant_inspection_results')
       .then(res => {
@@ -25,8 +35,10 @@ function App() {
 
   useEffect(() => {
     getBoundaries();
+    getBuildingComplaints();
+    getNypdComplaints();
     getRestaurantInspectionResults();
-  }, [state]);
+  }, []);
 
   return (
     <div className="App">
@@ -44,7 +56,7 @@ function App() {
           Learn React
         </a>
         <p>The current time is {state.currentTime}.</p>
-        <p>NYC borough boundaries are {state.boroughBoundaries}</p>
+        <p>NYC borough boundaries are {String(state.boroughBoundaries)}</p>
       </header>
     </div>
   );

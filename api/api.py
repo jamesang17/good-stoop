@@ -46,7 +46,7 @@ def update_borough_boundaries():
     """
     start_datetime, end_datetime = get_start_end_datetimes()
 
-    results = SOCRATA_CLIENT.get(BOROUGH_BOUNDARIES_ID, limit=100000)
+    results = SOCRATA_CLIENT.get(BOROUGH_BOUNDARIES_ID, limit=5)
 
     df = pd.DataFrame.from_records(results)
     return df
@@ -66,7 +66,7 @@ def update_building_complaint_results():
 
     cols_to_keep = "status,date_entered,house_number,zip_code,house_street,community_board"
     results = SOCRATA_CLIENT.get(
-        BUILDING_COMPLAINT_ID, limit=5, select=cols_to_keep)
+        BUILDING_COMPLAINT_ID, limit=10, select=cols_to_keep)
 
     df = pd.DataFrame.from_records(results)
     return df
@@ -86,7 +86,7 @@ def update_nypd_complaint_results():
 
     cols_to_keep = "boro_nm,cmplnt_fr_dt,cmplnt_to_dt,juris_desc,law_cat_cd,ofns_desc,prem_typ_desc,longitude,latitude"
     results = SOCRATA_CLIENT.get(
-        NYPD_COMPLAINT_ID, limit=100000, select=cols_to_keep)
+        NYPD_COMPLAINT_ID, limit=10, select=cols_to_keep)
 
     df = pd.DataFrame.from_records(results)
     return df
