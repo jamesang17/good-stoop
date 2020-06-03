@@ -4,26 +4,28 @@ import './App.css';
 import axios from 'axios';
 
 function App() {
-  const [state,setState] = useState({
+  const [state, setState] = useState({
     currentTime: 0,
     boroughBoundaries: null
   })
 
+  const getBoundaries = async () => {
+    await axios.get('/api/borough_boundaries')
+      .then(res => {
+        console.log(res.data);
+      });
+  }
+
+  const getRestaurantInspectionResults = async () => {
+    await axios.get('/api/restaurant_inspection_results')
+      .then(res => {
+        console.log(res.data);
+      });
+  }
+
   useEffect(() => {
-    const getBoundaries = async () => {
-      await axios.get('/api/borough-boundaries')
-        .then(res => res.json())
-        .then(data => {
-          setState({...state, boroughBoundaries: data})
-        });
-    }
-    fetch('/api/restaurant_inspection_results')
-      .then(res => res.json())
-      .then(data => {
-        console.log(data);
-    });
-    
     getBoundaries();
+    getRestaurantInspectionResults();
   }, [state]);
 
   return (
