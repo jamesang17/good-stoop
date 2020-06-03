@@ -1,15 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import axios from 'axios';
 
 function App() {
-  const currentTime = useState(0);
+  const [state,setState] = useState({
+    currentTime: 0,
+    boroughBoundaries: null
+  })
 
   useEffect(() => {
-    fetch('/api/restaurant_inspection_results').then(res => res.json()).then(data => {
-      console.log(data);
+    const getBoundaries = async () => {
+      await axios.get('/api/borough-boundaries')
+        .then(res => res.json())
+        .then(data => {
+          setState({...state, boroughBoundaries: data})
+        });
+    }
+    fetch('/api/restaurant_inspection_results')
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
     });
-  }, []);
+    
+    getBoundaries();
+  }, [state]);
 
   return (
     <div className="App">
@@ -26,7 +41,8 @@ function App() {
         >
           Learn React
         </a>
-        <p>The current time is {currentTime}.</p>
+        <p>The current time is {state.currentTime}.</p>
+        <p>NYC borough boundaries are {state.boroughBoundaries}</p>
       </header>
     </div>
   );
