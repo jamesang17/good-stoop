@@ -28,9 +28,6 @@ RESTAURANT_INSPECTION_FNAME = "restaurant_data.json"
 STORAGE_CLIENT = storage.Client()
 BUCKET = STORAGE_CLIENT.bucket(settings.GCP_BUCKET)
 
-# Today's date in RFC3339 date format
-TODAY = datetime.now().strftime("%Y-%m-%d")
-
 
 def __upload_to_gcp_bucket(df,fname):
     """Uploads dataframe as json to GCP bucket
@@ -194,7 +191,7 @@ def get_building_complaint_results():
     data = None
     blob = BUCKET.blob(BUILDING_COMPLAINT_FNAME)
     blob.reload(client=STORAGE_CLIENT)
-    if blob.exists() and blob.time_created.strftime("%Y-%m-%d") == TODAY:
+    if blob.exists() and blob.time_created.strftime("%Y-%m-%d") == datetime.now().strftime("%Y-%m-%d"):
         data = __retrieve_from_bucket(BUILDING_COMPLAINT_FNAME)
     else:
         df = update_building_complaint_results()
@@ -217,7 +214,7 @@ def get_nypd_complaint_results():
     data = None
     blob = BUCKET.blob(NYPD_COMPLAINT_FNAME)
     blob.reload(client=STORAGE_CLIENT)
-    if blob.exists() and blob.time_created.strftime("%Y-%m-%d") == TODAY:
+    if blob.exists() and blob.time_created.strftime("%Y-%m-%d") == datetime.now().strftime("%Y-%m-%d"):
         data = __retrieve_from_bucket(NYPD_COMPLAINT_FNAME)
     else:
         df = update_nypd_complaint_results()
@@ -240,7 +237,7 @@ def get_restaurant_inspection_results():
     data = None
     blob = BUCKET.blob(RESTAURANT_INSPECTION_FNAME)
     blob.reload(client=STORAGE_CLIENT)
-    if blob.exists() and blob.time_created.strftime("%Y-%m-%d") == TODAY:
+    if blob.exists() and blob.time_created.strftime("%Y-%m-%d") == datetime.now().strftime("%Y-%m-%d"):
         data = __retrieve_from_bucket(RESTAURANT_INSPECTION_FNAME)
     else:
         df = update_restaurant_inspection_results()
