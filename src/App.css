@@ -36,3 +36,10 @@
     transform: rotate(360deg);
   }
 }
+
+/* To pad the body below the header navbar and from the sides. */
+body { 
+  padding-top: 70px; 
+  padding-left: 50px;
+  padding-right: 50px;
+}

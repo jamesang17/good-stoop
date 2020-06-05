@@ -33,7 +33,7 @@ BUCKET = STORAGE_CLIENT.bucket(settings.GCP_BUCKET)
 GEOLOCATOR = Nominatim(user_agent="good_stoop_app")
 
 
-def __upload_to_gcp_bucket(df,fname):
+def __upload_to_gcp_bucket(df, fname):
     """Uploads dataframe as json to GCP bucket
 
     Parameters
@@ -91,9 +91,7 @@ def update_borough_boundaries():
     results = SOCRATA_CLIENT.get(BOROUGH_BOUNDARIES_ID)
 
     df = pd.DataFrame.from_records(results)
-    cols = list(df)
-    for c in cols:
-        df[c].fillna("null", inplace=True)
+    df = df.fillna("null")
     return df
 
 
@@ -112,7 +110,7 @@ def update_building_complaint_results():
     results = SOCRATA_CLIENT.get(
         BUILDING_COMPLAINT_ID, 
         limit=10, 
-        select=",".join(cols_to_keep+address_cols),
+        select=",".join(cols_to_keep + address_cols),
         where=f"status='ACTIVE' and dobrundate between '{start_datetime.isoformat()}' and '{end_datetime.isoformat()}'")
 
     df = pd.DataFrame.from_records(results)
@@ -123,8 +121,8 @@ def update_building_complaint_results():
         location = GEOLOCATOR.geocode(address)
         lat.append(location.latitude if location else "null")
         lng.append(location.longitude if location else "null")
-    df.insert(0,"latitude",lat)
-    df.insert(0,"longitude",lng)
+    df.insert(0, "latitude", lat)
+    df.insert(0, "longitude", lng)
     __upload_to_gcp_bucket(df, BUILDING_COMPLAINT_FNAME)
     return df
 
@@ -211,7 +209,7 @@ def get_building_complaint_results():
     
     df = update_building_complaint_results()
     data = df.to_dict(orient="records")
-    return {"data": data }
+    return {"data": data}
 
 
 @app.route('/api/nypd_complaint_results')
@@ -236,7 +234,7 @@ def get_nypd_complaint_results():
     df = update_nypd_complaint_results()
     data = df.to_dict(orient="records")
     # print(df)
-    return {"data": data }
+    return {"data": data}
 
 
 @app.route('/api/restaurant_inspection_results')

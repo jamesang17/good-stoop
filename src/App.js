@@ -1,32 +1,36 @@
-import React, { useContext } from 'react';
-import logo from './logo.svg';
+import React from 'react';
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import './App.css';
-import { DataContext } from './components/providers/DataProvider';
-import MapContainer from './components/map/MapContainer';
+import Header from './components/header/Header';
+import Home from './components/Home';
+import BuildingComplaints from './components/BuildingComplaints';
+import NypdComplaints from './components/NypdComplaints';
+import RestaurantInspections from './components/RestaurantInspections';
 
 
 function App() {
-  const { state } = useContext(DataContext);
-
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-        <p>The current time is {state.currentTime}.</p>
-      </header>
-      {/* <MapContainer boroughBounds={state.nycBoundaries} nypdData={state.nypdComplaints}/> */}
-    </div>
+    <Router>
+      <Header />
+
+      <Switch>
+        <Route path="/building-complaints">
+          <BuildingComplaints />
+        </Route>
+
+        <Route path="/nypd-complaints">
+          <NypdComplaints />
+        </Route>
+
+        <Route path="/restaurant-inspections">
+          <RestaurantInspections />
+        </Route>
+
+        <Route path="/">
+          <Home />
+        </Route>
+      </Switch>
+    </Router>
   );
 }
 
