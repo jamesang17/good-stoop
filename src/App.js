@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { DataContext } from './components/providers/DataProvider';
+import MapContainer from './components/map/MapContainer';
 
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
         </a>
         <p>The current time is {state.currentTime}.</p>
       </header>
+      {/* <MapContainer boroughBounds={state.nycBoundaries} nypdData={state.nypdComplaints}/> */}
     </div>
   );
 }

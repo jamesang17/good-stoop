@@ -4,6 +4,7 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import { DataProvider } from './components/providers/DataProvider'
+require('dotenv').config()
 
 ReactDOM.render(
   <React.StrictMode>

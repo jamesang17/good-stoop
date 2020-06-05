@@ -45,7 +45,6 @@ export const DataProvider = ({ children }) => {
       .then(res => { 
         console.log(res.data);
         setState({ ...state, nypdComplaints: res.data });
-
       });
   }
 
