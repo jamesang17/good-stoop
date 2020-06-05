@@ -4,3 +4,4 @@ pandas
 python-dotenv
 sodapy
 google-cloud-storage
+geopy

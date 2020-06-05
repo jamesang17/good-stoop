@@ -6,6 +6,7 @@ import pandas as pd
 from flask import Flask
 from sodapy import Socrata
 from google.cloud import storage
+from geopy.geocoders import Nominatim
 import settings
 
 app = Flask(__name__)
@@ -28,6 +29,9 @@ RESTAURANT_INSPECTION_FNAME = "restaurant_data.json"
 STORAGE_CLIENT = storage.Client()
 BUCKET = STORAGE_CLIENT.bucket(settings.GCP_BUCKET)
 
+# GEOPY Geolocator
+GEOLOCATOR = Nominatim(user_agent="good_stoop_app")
+
 
 def __upload_to_gcp_bucket(df,fname):
     """Uploads dataframe as json to GCP bucket
@@ -40,7 +44,7 @@ def __upload_to_gcp_bucket(df,fname):
         String file name
     """
     blob = BUCKET.blob(fname)
-    json_str = df.to_json(orient='columns')
+    json_str = df.to_json(orient='records')
     blob.upload_from_string(json_str)
 
 
@@ -84,9 +88,7 @@ def update_borough_boundaries():
     DataFrame
         dataframe with updated borough boundaries
     """
-    start_datetime, end_datetime = get_start_end_datetimes()
-
-    results = SOCRATA_CLIENT.get(BOROUGH_BOUNDARIES_ID, limit=5)
+    results = SOCRATA_CLIENT.get(BOROUGH_BOUNDARIES_ID)
 
     df = pd.DataFrame.from_records(results)
     cols = list(df)
@@ -105,16 +107,24 @@ def update_building_complaint_results():
     """
     start_datetime, end_datetime = get_start_end_datetimes()
 
-    # TODO: filter data by start and end datetimes.
-
-    cols_to_keep = "status,date_entered,house_number,zip_code,house_street,community_board"
+    cols_to_keep = ["status", "date_entered", "community_board", "dobrundate"]
+    address_cols = ["house_number","house_street","zip_code"]
     results = SOCRATA_CLIENT.get(
-        BUILDING_COMPLAINT_ID, limit=10, select=cols_to_keep)
+        BUILDING_COMPLAINT_ID, 
+        limit=10, 
+        select=",".join(cols_to_keep+address_cols),
+        where=f"status='ACTIVE' and dobrundate between '{start_datetime.isoformat()}' and '{end_datetime.isoformat()}'")
 
     df = pd.DataFrame.from_records(results)
-    cols = list(df)
-    for c in cols:
-        df[c].fillna("null", inplace=True)
+    lat = []
+    lng = []
+    for idx, row in df.iterrows():
+        address = " ".join([str(row[ac]) for ac in address_cols])
+        location = GEOLOCATOR.geocode(address)
+        lat.append(location.latitude if location else "null")
+        lng.append(location.longitude if location else "null")
+    df.insert(0,"latitude",lat)
+    df.insert(0,"longitude",lng)
     __upload_to_gcp_bucket(df, BUILDING_COMPLAINT_FNAME)
     return df
 
@@ -129,11 +139,12 @@ def update_nypd_complaint_results():
     """
     start_datetime, end_datetime = get_start_end_datetimes()
 
-    # TODO: filter data by start and end datetimes.
-
     cols_to_keep = "boro_nm,cmplnt_fr_dt,cmplnt_to_dt,juris_desc,law_cat_cd,ofns_desc,prem_typ_desc,longitude,latitude"
     results = SOCRATA_CLIENT.get(
-        NYPD_COMPLAINT_ID, limit=10, select=cols_to_keep)
+        NYPD_COMPLAINT_ID, 
+        limit=10, 
+        select=cols_to_keep,
+        where=f"cmplnt_to_dt IS NULL and cmplnt_fr_dt between '{start_datetime.isoformat()}' and '{end_datetime.isoformat()}'")
 
     df = pd.DataFrame.from_records(results)
     cols = list(df)
@@ -152,8 +163,12 @@ def update_restaurant_inspection_results():
         dataframe with updated restaurant inspection results
     """
     start_datetime, end_datetime = get_start_end_datetimes()
-    results = SOCRATA_CLIENT.get(RESTAURANT_INSPECTION_ID, limit=10,
-                                 where=f"inspection_date between '{start_datetime.isoformat()}' and '{end_datetime.isoformat()}'")
+    cols_to_keep = "dba,boro,building,street,zipcode,cuisine_description,inspection_date,violation_code,violation_description,critical_flag,score,grade,latitude,longitude" 
+    results = SOCRATA_CLIENT.get(
+        RESTAURANT_INSPECTION_ID, 
+        limit=10, 
+        select=cols_to_keep,
+        where=f"inspection_date between '{start_datetime.isoformat()}' and '{end_datetime.isoformat()}'")
     df = pd.DataFrame.from_records(results)
     cols = list(df)
     for c in cols:
@@ -172,9 +187,7 @@ def get_borough_boundaries():
         a dictionary of response data
     """
     df = update_borough_boundaries()
-    # print(df)
-    # print(df.shape)
-    return {"data": df.to_dict()}
+    return {"data": df.to_dict(orient="records")}
 
 
 @app.route('/api/building_complaint_results')
@@ -190,13 +203,14 @@ def get_building_complaint_results():
     """
     data = None
     blob = BUCKET.blob(BUILDING_COMPLAINT_FNAME)
-    blob.reload(client=STORAGE_CLIENT)
-    if blob.exists() and blob.time_created.strftime("%Y-%m-%d") == datetime.now().strftime("%Y-%m-%d"):
-        data = __retrieve_from_bucket(BUILDING_COMPLAINT_FNAME)
-    else:
-        df = update_building_complaint_results()
-        data = df.to_dict()
-        # print(df)
+    if blob.exists():
+        blob.reload(client=STORAGE_CLIENT)
+        if blob.time_created.strftime("%Y-%m-%d") == datetime.now().strftime("%Y-%m-%d"):
+            print("Getting cached file " + BUILDING_COMPLAINT_FNAME)
+            return {"data": __retrieve_from_bucket(BUILDING_COMPLAINT_FNAME)}
+    
+    df = update_building_complaint_results()
+    data = df.to_dict(orient="records")
     return {"data": data }
 
 
@@ -213,12 +227,14 @@ def get_nypd_complaint_results():
     """
     data = None
     blob = BUCKET.blob(NYPD_COMPLAINT_FNAME)
-    blob.reload(client=STORAGE_CLIENT)
-    if blob.exists() and blob.time_created.strftime("%Y-%m-%d") == datetime.now().strftime("%Y-%m-%d"):
-        data = __retrieve_from_bucket(NYPD_COMPLAINT_FNAME)
-    else:
-        df = update_nypd_complaint_results()
-        data = df.to_dict()
+    if blob.exists():
+        blob.reload(client=STORAGE_CLIENT)
+        if blob.time_created.strftime("%Y-%m-%d") == datetime.now().strftime("%Y-%m-%d"):
+            print("Getting cached file " + NYPD_COMPLAINT_FNAME)
+            return {"data": __retrieve_from_bucket(NYPD_COMPLAINT_FNAME)}
+    
+    df = update_nypd_complaint_results()
+    data = df.to_dict(orient="records")
     # print(df)
     return {"data": data }
 
@@ -236,22 +252,13 @@ def get_restaurant_inspection_results():
     """
     data = None
     blob = BUCKET.blob(RESTAURANT_INSPECTION_FNAME)
-    blob.reload(client=STORAGE_CLIENT)
-    if blob.exists() and blob.time_created.strftime("%Y-%m-%d") == datetime.now().strftime("%Y-%m-%d"):
-        data = __retrieve_from_bucket(RESTAURANT_INSPECTION_FNAME)
-    else:
-        df = update_restaurant_inspection_results()
+    if blob.exists():
+        blob.reload(client=STORAGE_CLIENT)
+        if blob.time_created.strftime("%Y-%m-%d") == datetime.now().strftime("%Y-%m-%d"):
+            print("Getting cached file " + RESTAURANT_INSPECTION_FNAME)
+            return {"data": __retrieve_from_bucket(RESTAURANT_INSPECTION_FNAME)}
+    
+    df = update_restaurant_inspection_results()
 
-        data = []
-
-        # Columns from the dataframe to add to the data.
-        inspection_details = ["dba", "boro", "building", "street", "zipcode", "cuisine_description", "inspection_date",
-                            "violation_code", "violation_description", "critical_flag", "score", "grade", "latitude", "longitude"]
-
-        for idx, row in df.iterrows():
-            inspection = {}
-            for col in inspection_details:
-                inspection.update({col: row[col]})
-            data.append(inspection)
-
+    data = df.to_dict(orient="records")
     return {"data": data}
