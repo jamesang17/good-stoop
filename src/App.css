@@ -37,9 +37,14 @@
   }
 }
 
-/* To pad the body below the header navbar and from the sides. */
+.header-item {
+  color: white;
+  text-decoration: none;
+};
+
+/* To pad the body below the header navbar and from the sides.
 body { 
-  padding-top: 70px; 
-  padding-left: 50px;
-  padding-right: 50px;
-}
+  padding-top: 10px; 
+  padding-left: 5px;
+  padding-right: 5px;
+} */
