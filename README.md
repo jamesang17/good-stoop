@@ -14,12 +14,13 @@ Dashboard of a NYC heat map showing which areas have more complaints than others
 ## To Run
 
 1. Install packages `npm install`
-2. Start reactjs webserver `yarn start`
-3. Create python venv inside api dir `api $ python3 -m venv venv`
-4. Activate venv `source venv/bin/activate`
-5. Install python packages listed in api/requirements.txt `(venv) $ pip install flask ...`
-6. Setup `.env` and `settings.py` file with necessary GCP variables
-7. Start flask api `yarn start-api`
+2. Setup `.env` with Google Maps API key
+3. Start reactjs webserver `yarn start`
+4. Create python venv inside api dir `api $ python3 -m venv venv`
+5. Activate venv `source venv/bin/activate`
+6. Install python packages listed in api/requirements.txt `(venv) $ pip install flask ...`
+7. Setup `api/.env` and `settings.py` file with necessary GCP variables
+8. Start flask api `yarn start-api`
 
 ## TODOs
 - [X] create queries to get borough boundaries
