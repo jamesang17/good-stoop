@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Map, GoogleApiWrapper } from 'google-maps-react';
+import { Map, GoogleApiWrapper, HeatMap } from 'google-maps-react';
 
 class MapContainer extends Component {
   render() {
@@ -18,6 +18,16 @@ class MapContainer extends Component {
       bounds.extend(boundPoints[i]);
     }
 
+    const data = this.props.data.filter(item => item.latitude !== "null" && item.longitude !== "null");
+    const positions = data.map(item => {
+      return {
+        lat: item.latitude,
+        lng: item.longitude
+      }
+    });
+
+    console.log(positions);
+
     return (
       <div style={style}>
         <Map
@@ -30,6 +40,11 @@ class MapContainer extends Component {
           bounds={bounds}
           draggable={true}
         >
+          <HeatMap
+            opacity={1}
+            positions={positions}
+            radius={20}
+          />
         </Map>
       </div>
     );
@@ -37,5 +52,6 @@ class MapContainer extends Component {
 }
 
 export default GoogleApiWrapper({
-  apiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY
+  apiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+  libraries: ["visualization"]
 })(MapContainer)

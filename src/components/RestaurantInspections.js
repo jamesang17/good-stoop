@@ -7,13 +7,13 @@ class RestaurantInspections extends Component {
 
     render() {
         const context = this.context;
-
-        console.log("Context");
-        console.log(context);
-        
+        if (context["restaurantInspections"].length === 0) {
+            // TODO: handle "loading" better
+            return (<div>Loading...</div>);
+        }
         return (
             <div className="restaurant-inspections">
-                <MapContainer />
+                <MapContainer data={context["restaurantInspections"]} />
             </div>
         );
     }

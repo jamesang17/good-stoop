@@ -7,13 +7,13 @@ class NypdComplaints extends Component {
 
     render() {
         const context = this.context;
-
-        console.log("Context");
-        console.log(context);
-        
+        if (context["nypdComplaints"].length === 0) {
+            // TODO: handle "loading" better
+            return (<div>Loading...</div>);
+        }
         return (
             <div className="nypd-complaints">
-                <MapContainer />
+                <MapContainer data={context["nypdComplaints"]} />
             </div>
         );
     }
